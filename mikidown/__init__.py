@@ -494,7 +494,6 @@ class MikiWindow(QMainWindow):
         self.notesEdit.insertPlainText(filename)
 
     def notesEditInFocus(self, e):
-        print('hello')
         if e.gotFocus:
             self.actionInsertImage.setEnabled(True)
         #if e.lostFocus:
@@ -505,11 +504,8 @@ class MikiWindow(QMainWindow):
             return True
         pagePath = self.notesTree.itemToPagePath(item)
         pageFile = '{}.md'.format(os.path.join(self.notebookPath, pagePath))
-        # not sure this is safe
         # should be edited to provide max config searching
-        cmd = ['grep', pattern, pageFile]
-        # grep return 0 when pattern found
-        return not call(cmd, stdout=None)
+        return grep(pattern, pageFile)
 
     def searchNote(self):
         self.searchList.clear()
@@ -606,7 +602,7 @@ class MikiWindow(QMainWindow):
         else:
             event.ignore()
         '''
-'''
+
 def grep(pattern, f):
   regex = re.compile(pattern)
   with open(f) as fl:
@@ -614,7 +610,7 @@ def grep(pattern, f):
       if regex.search(line):
         return True
   return False
-'''
+
 def main():
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon.fromTheme('mikidown'))

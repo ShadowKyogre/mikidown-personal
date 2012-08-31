@@ -38,7 +38,7 @@ class MikiWindow(QMainWindow):
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
-        self.notesEdit = QTextEdit()
+        self.notesEdit = QPlainTextEdit()
         self.notesView = QWebView()
         
         self.findBar = QToolBar(self.tr('Find'), self)

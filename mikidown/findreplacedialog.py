@@ -23,6 +23,8 @@ class FindReplaceDialog(QDialog):
     self.prevButton.clicked.connect(lambda: self.find(back = True))
     self.replaceButton.clicked.connect(self.replace)
     self.replaceAllButton.clicked.connect(self.replaceAll)
+    self.searchInput.returnPressed.connect(self.find)
+    self.replaceInput.returnPressed.connect(self.replace)
     
     grid.addWidget(QLabel(self.tr("Search")),0,0)
     grid.addWidget(QLabel(self.tr("    Options")),1,0)

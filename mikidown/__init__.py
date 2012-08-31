@@ -9,6 +9,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
 from mikidown.config import *
 from mikidown.mikitree import *
+from mikidown.findreplacedialog import *
 
 import markdown
 sys.path.append(os.path.dirname(__file__))
@@ -42,6 +43,7 @@ class MikiWindow(QMainWindow):
         
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
+
         self.noteSplitter = QSplitter(Qt.Horizontal)
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
@@ -99,6 +101,9 @@ class MikiWindow(QMainWindow):
         self.actionRedo.setEnabled(False)
         self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
         self.actionFindText = self.act(self.tr('&Find Text'), shct=QKeySequence.Find)
+        self.actionFindReplaceText = self.act(self.tr('&Find and Replace Text'), shct=QKeySequence('Ctrl+H'))
+        self.actionFindReplaceText.triggered.connect(FindReplaceDialog(self.notesEdit).open)
+        self.actionFindReplaceText.setEnabled(False)
         self.actionFindText.setCheckable(True)
         self.actionFindText.triggered.connect(self.findBar.setVisible)
         self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
@@ -144,6 +149,7 @@ class MikiWindow(QMainWindow):
         self.menuEdit.addAction(self.actionUndo)
         self.menuEdit.addAction(self.actionRedo)
         self.menuEdit.addAction(self.actionFindText)
+        self.menuEdit.addAction(self.actionFindReplaceText)
         self.menuEdit.addSeparator()
         self.menuEdit.addAction(self.actionInsertImage)
         # menuView
@@ -386,6 +392,7 @@ class MikiWindow(QMainWindow):
         self.actionInsertImage.setEnabled(viewmode)
         self.actionLeftAndRight.setEnabled(True)
         self.actionUpAndDown.setEnabled(True)
+        self.actionFindReplaceText.setEnabled(viewmode)
 
     def liveView(self, viewmode):
         self.actionLiveView.setChecked(viewmode)
@@ -599,7 +606,15 @@ class MikiWindow(QMainWindow):
         else:
             event.ignore()
         '''
-
+'''
+def grep(pattern, f):
+  regex = re.compile(pattern)
+  with open(f) as fl:
+    for line in fl:
+      if regex.search(line):
+        return True
+  return False
+'''
 def main():
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon.fromTheme('mikidown'))

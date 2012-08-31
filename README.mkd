@@ -54,6 +54,7 @@ Changes made by me:
 * Properly support relative URLS
 * use wiki:// to indicate a link within the notebook
 * Fix PDF support
+
 ---
 ## Helps needed
 

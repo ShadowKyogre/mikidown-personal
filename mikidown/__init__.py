@@ -437,7 +437,9 @@ class MikiWindow(QMainWindow):
 
     def parseText(self):
         htmltext = self.notesEdit.toPlainText()
-        return md.convert(htmltext)
+        final_text = md.convert(htmltext)
+        md.reset()
+        return final_text
 
     def linkClicked(self, qlink):
         name = qlink.toString()

@@ -6,7 +6,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import mikidown
 
-settings = QSettings('mikidown', 'mikidown')
+settings = QSettings(QSettings.IniFormat, QSettings.UserScope,
+		'mikidown', 'mikidown')
 
 def readListFromSettings(settings, key):
 	if not settings.contains(key):

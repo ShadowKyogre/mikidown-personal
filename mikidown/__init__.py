@@ -14,6 +14,11 @@ from mikidown.findreplacedialog import *
 import markdown
 sys.path.append(os.path.dirname(__file__))
 
+monofont = QFont()
+monofont.setFamily(settings.value('editorFont', 'monospace'))
+if settings.contains('editorFontSize'):
+    monofont.setPointSize(settings.value('editorFontSize', 12)) 
+
 extensions = settings.value('extensions',['nl2br','strkundr'])
 settings.setValue('extensions',extensions)
 md = markdown.Markdown(extensions)
@@ -48,6 +53,7 @@ class MikiWindow(QMainWindow):
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
         self.notesEdit.setVisible(False)
+        self.notesEdit.setFont(monofont)
         self.notesView.settings().clearMemoryCaches()
         notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
         self.notesView.settings().setUserStyleSheetUrl(notecss)
@@ -239,7 +245,8 @@ class MikiWindow(QMainWindow):
 
             layout = QTabWidget()
             dialog.setWidget(layout)
-            notesEdit = QTextEdit()
+            notesEdit = QPlainTextEdit()
+            notesEdit.setFont(monofont)
             notesView = QWebView()
             notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
             notesView.settings().setUserStyleSheetUrl(notecss)

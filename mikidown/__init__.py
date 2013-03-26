@@ -64,6 +64,7 @@ class MikiWindow(QMainWindow):
         self.mainSplitter.setStretchFactor(1, 5)
 
         self.notesTree = MikiTree(notebookPath)
+        self.notesTree.nvwCallback = lambda: self.newNoteDisplay(self.notesTree.currentItem())
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
         self.searchList = QListWidget()
@@ -74,7 +75,7 @@ class MikiWindow(QMainWindow):
         self.searchTab.setLayout(searchLayout)
         #self.tabWidget.addTab(self.notesTree, 'Index')
         #self.tabWidget.addTab(self.searchTab, 'Search')
-		
+        
         docky = QDockWidget('Index')
         docky2 = QDockWidget('Search')
 
@@ -209,7 +210,7 @@ class MikiWindow(QMainWindow):
         #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
         #self.notebookSettings = QSettings('mikidown', 'notebook')
         self.notebookSettings = QSettings(os.path.join(notebookPath,
-                                                    'notebook.conf'),
+                                          'notebook.conf'),
                                           QSettings.IniFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
@@ -217,6 +218,47 @@ class MikiWindow(QMainWindow):
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
+
+    def newNoteDisplay(self, item):
+        #print(item)
+        if item is None: return
+        name = self.notesTree.itemToPagePath(item)
+
+        filename = os.path.join(self.notebookPath, name + '.md')
+        fh = QFile(filename)
+        try:
+            if not fh.open(QIODevice.ReadOnly):
+                raise IOError(fh.errorString())
+        except IOError as e:
+            QMessageBox.warning(self, 'Read Error', 
+                    'Failed to open %s: %s' % (filename, e))
+        finally:
+            dialog = QDockWidget(os.path.basename(name),self)
+            dialog.setFloating(True)
+            dialog.setAttribute(Qt.WA_DeleteOnClose)
+
+            layout = QTabWidget()
+            dialog.setWidget(layout)
+            notesEdit = QTextEdit()
+            notesView = QWebView()
+            notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
+            notesView.settings().setUserStyleSheetUrl(notecss)
+            notesEdit.setReadOnly(True)
+            layout.addTab(notesEdit,'Markdown')
+            layout.addTab(notesView,'HTML')
+            if fh is not None:
+                noteBody = QTextStream(fh).readAll()
+                fh.close()
+                notesEdit.setPlainText(noteBody)
+                #self.editted = 0
+                #self.actionSave.setEnabled(False)
+                notesEdit.document().setModified(False)
+
+                url_here = 'file://' + os.path.join(self.notebookPath,name)
+                final_text = md.convert(noteBody)
+                md.reset()
+                notesView.setHtml(final_text, QUrl(url_here))
+            dialog.show()
 
     def initTree(self, notePath, parent):
         if not QDir(notePath).exists():

@@ -57,7 +57,7 @@ class MikiTree(QTreeWidget):
         self.setDragDropMode(QAbstractItemView.InternalMove)
         #self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-
+        self.nvwCallback = lambda item=self.currentItem(): None
         self.customContextMenuRequested.connect(self.treeMenu)
         
 
@@ -124,6 +124,7 @@ class MikiTree(QTreeWidget):
         menu = QMenu()
         menu.addAction("New Page...", self.newPage)
         menu.addAction("New Subpage...", self.newSubpage)
+        menu.addAction("View separately", self.nvwCallback)
         menu.addSeparator()
         menu.addAction("Collapse This Note Tree", 
             lambda item=self.currentItem(): self.recurseCollapse(item))
@@ -136,7 +137,7 @@ class MikiTree(QTreeWidget):
         self.delCallback = lambda item=self.currentItem(): self.delPage(item)
         menu.addAction("Delete Page", self.delCallback)
         menu.exec_(QCursor.pos())
-    
+
     def newPage(self):
         if self.currentItem() is None:
             self.newPageCore(self)

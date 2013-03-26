@@ -35,7 +35,7 @@ class MikiWindow(QMainWindow):
         else:
             self.setWindowTitle(__appname__)
         
-        self.tabWidget = QTabWidget()
+        #self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = QPlainTextEdit()
@@ -57,13 +57,13 @@ class MikiWindow(QMainWindow):
         self.rightSplitter.addWidget(self.noteSplitter)
         self.rightSplitter.addWidget(self.findBar)
         self.mainSplitter = QSplitter(Qt.Horizontal)
-        self.mainSplitter.addWidget(self.tabWidget)
+        #self.mainSplitter.addWidget(self.tabWidget)
         self.mainSplitter.addWidget(self.rightSplitter)
         self.setCentralWidget(self.mainSplitter)
         self.mainSplitter.setStretchFactor(0, 1)
         self.mainSplitter.setStretchFactor(1, 5)
 
-        self.notesTree = MikiTree()
+        self.notesTree = MikiTree(notebookPath)
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
         self.searchList = QListWidget()
@@ -72,9 +72,19 @@ class MikiWindow(QMainWindow):
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchList)
         self.searchTab.setLayout(searchLayout)
-        self.tabWidget.addTab(self.notesTree, 'Index')
-        self.tabWidget.addTab(self.searchTab, 'Search')
-        self.tabWidget.setMinimumWidth(150)
+        #self.tabWidget.addTab(self.notesTree, 'Index')
+        #self.tabWidget.addTab(self.searchTab, 'Search')
+		
+        docky = QDockWidget('Index')
+        docky2 = QDockWidget('Search')
+
+        docky.setWidget(self.notesTree)
+        docky2.setWidget(self.searchTab)
+
+        self.addDockWidget(Qt.LeftDockWidgetArea,docky)
+        self.addDockWidget(Qt.LeftDockWidgetArea,docky2)
+        self.tabifyDockWidget(docky2,docky)
+        #self.tabWidget.setMinimumWidth(150)
         #self.rightSplitter.setSizes([600,20,600,580])
         self.rightSplitter.setStretchFactor(0, 0)
         
@@ -222,8 +232,7 @@ class MikiWindow(QMainWindow):
         self.editted = 0
 
     def openNote(self, noteFullName):
-        filename = noteFullName + '.md'
-        print(filename)
+        filename = os.path.join(self.notebookPath, noteFullName + '.md')
         fh = QFile(filename)
         try:
             if not fh.open(QIODevice.ReadOnly):

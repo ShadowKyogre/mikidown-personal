@@ -46,8 +46,9 @@ class ItemDialog(QDialog):
 
 class MikiTree(QTreeWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, notebookPath, parent=None):
         super(MikiTree, self).__init__(parent)
+        self.notebookPath = notebookPath
         self.header().close()
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
@@ -159,7 +160,7 @@ class MikiTree(QTreeWidget):
             if hasattr(item, 'text'):
                 pagePath = pagePath + '/'
             if not QDir(pagePath).exists():
-                QDir.current().mkdir(pagePath)
+                QDir(self.notebookPath).mkdir(pagePath)
             fileName = pagePath + newPageName + '.md'
             fh = QFile(fileName)
             fh.open(QIODevice.WriteOnly)
@@ -191,15 +192,15 @@ class MikiTree(QTreeWidget):
             return
 
         #if not QDir(newName).exists():
-        QDir.current().mkpath(targetPath)
-        QDir.current().rename(oldName, newName)
+        QDir(self.notebookPath).mkpath(targetPath)
+        QDir(self.notebookPath).rename(oldName, newName)
         if sourceItem.childCount() != 0: 
-            QDir.current().rename(oldDir, newDir)
+            QDir(self.notebookPath).rename(oldDir, newDir)
         if sourceItem.parent() is not None:
             parentItem = sourceItem.parent()
             parentPath = self.itemToPagePath(parentItem)
             if parentItem.childCount() == 1:
-                QDir.current().rmdir(parentPath)
+                QDir(self.notebookPath).rmdir(parentPath)
         QTreeWidget.dropEvent(self, event)
         self.sortItems(0, Qt.AscendingOrder)
 
@@ -221,11 +222,11 @@ class MikiTree(QTreeWidget):
                 parentPath = parentPath + '/'
             oldName = parentPath + item.text(0) + '.md'
             newName = parentPath + newPageName + '.md'
-            QDir.current().rename(oldName, newName)
+            QDir(self.notebookPath).rename(oldName, newName)
             if item.childCount() != 0:
                 oldDir = parentPath + item.text(0)
                 newDir = parentPath + newPageName
-                QDir.current().rename(oldDir, newDir)
+                QDir(self.notebookPath).rename(oldDir, newDir)
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
 
@@ -245,18 +246,18 @@ class MikiTree(QTreeWidget):
             self.delPage(item.child(index))
 
         pagePath = self.itemToPagePath(item)
-        QDir.current().remove(pagePath + '.md')
+        QDir(self.notebookPath).remove(pagePath + '.md')
         parent = item.parent()
         parentPath = self.itemToPagePath(parent)
         if parent is not None:
             index = parent.indexOfChild(item)
             parent.takeChild(index)
             if parent.childCount() == 0:    #if no child, dir not needed
-                QDir.current().rmdir(parentPath)
+                QDir(self.notebookPath).rmdir(parentPath)
         else:
             index = self.indexOfTopLevelItem(item)
             self.takeTopLevelItem(index)    
-        QDir.current().rmdir(pagePath)
+        QDir(self.notebookPath).rmdir(pagePath)
     
     def recurseCollapse(self, item):
       for i in range(item.childCount()):

@@ -19,7 +19,7 @@ monofont.setFamily(settings.value('editorFont', 'monospace'))
 if settings.contains('editorFontSize'):
     monofont.setPointSize(settings.value('editorFontSize', 12)) 
 
-extensions = settings.value('extensions',['nl2br','strkundr'])
+extensions = settings.value('extensions',['nl2br','strkundr','toc'])
 settings.setValue('extensions',extensions)
 md = markdown.Markdown(extensions)
 
@@ -476,7 +476,7 @@ class MikiWindow(QMainWindow):
 
         noteItem = self.notesTree.currentItem()
         name = self.notesTree.itemToPagePath(noteItem)
-        url_here = 'file://' + os.path.join(self.notebookPath,name)
+        url_here = 'wiki://' + os.path.join(self.notebookPath,name)
 
         self.notesView.setHtml(self.parseText(), QUrl(url_here))
         viewFrame.setScrollPosition(self.scrollPosition)
@@ -493,9 +493,11 @@ class MikiWindow(QMainWindow):
         self.scrollPosition.setY(newPositionY)
         viewFrame.setScrollPosition(self.scrollPosition)
 
-    def parseText(self):
+    def parseText(self, source=None):
         htmltext = self.notesEdit.toPlainText()
         final_text = md.convert(htmltext)
+        if hasattr(md,'toc'):
+            final_text="<a class='tocshow'>TOC\n{}</a>\n\n<div class='contents'>{}\n</div>".format(md.toc,final_text)
         md.reset()
         return final_text
 
@@ -505,8 +507,15 @@ class MikiWindow(QMainWindow):
         if p.match(name):
             QDesktopServices.openUrl(qlink)
         elif qlink.scheme() == "wiki":
+            if hasattr(md,'toc'):
+                here,anchor=qlink.path(),qlink.fragment()
+            else:
+                here,anchor=qlink.path(),None
             item = self.notesTree.pagePathToItem(qlink.path())
-            self.notesTree.setCurrentItem(item)
+            if self.notesTree.currentItem() != item:
+                #print(name)
+                self.notesTree.setCurrentItem(item)
+            if anchor is not None: self.notesView.page().mainFrame().scrollToAnchor(anchor)
 
     def linkHovered(self, link, title, textContent):
         if link == '':

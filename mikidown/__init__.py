@@ -507,7 +507,7 @@ class MikiWindow(QMainWindow):
         if p.match(name):
             QDesktopServices.openUrl(qlink)
         elif qlink.scheme() == "wiki":
-            if hasattr(md,'toc'):
+            if 'toc' in extensions:
                 here,anchor=qlink.path(),qlink.fragment()
             else:
                 here,anchor=qlink.path(),None

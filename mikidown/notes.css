@@ -34,3 +34,31 @@ code {
 	margin: -1px 0;
 }
 pre code { font-size: 1em; background: none; border: none; }
+
+/* Prototype TOC CSS for now */
+div.toc {
+    top: 1em;
+    position: fixed;
+    display: none;
+    background: black;
+    color: white;
+}
+div.toc a:link, div.toc li {
+	color:white;
+}
+
+div.contents {
+    margin-right: 2em;
+}
+
+a.tocshow {
+    top: 0;
+    right: 0;
+    position: fixed;
+    background: black;
+    color:white;
+}
+
+a.tocshow:hover + div.toc, div.toc:hover {
+    display: block;
+}

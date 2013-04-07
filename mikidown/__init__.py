@@ -499,7 +499,7 @@ class MikiWindow(QMainWindow):
             htmltext = self.notesEdit.toPlainText()
         final_text = md.convert(htmltext)
         if hasattr(md,'toc'):
-            final_text="<a class='tocshow'>TOC\n{}</a>\n\n<div class='contents'>{}\n</div>".format(md.toc,final_text)
+            final_text="<div id='tocwrapper'><a class='tocshow'>&#9776;\n{}</a></div>\n\n<div class='contents'>{}\n</div>".format(md.toc,final_text)
         md.reset()
         return final_text
 

@@ -507,15 +507,13 @@ class MikiWindow(QMainWindow):
         if p.match(name):
             QDesktopServices.openUrl(qlink)
         elif qlink.scheme() == "wiki":
-            if 'toc' in extensions:
-                here,anchor=qlink.path(),qlink.fragment()
-            else:
-                here,anchor=qlink.path(),None
+            here,anchor=qlink.path(),qlink.fragment()
+            print(here,anchor)
+            #now we just need to do the same scrolling in the edit view
             item = self.notesTree.pagePathToItem(qlink.path())
             if self.notesTree.currentItem() != item:
-                #print(name)
                 self.notesTree.setCurrentItem(item)
-            if anchor is not None: self.notesView.page().mainFrame().scrollToAnchor(anchor)
+            self.notesView.page().mainFrame().scrollToAnchor(anchor)
 
     def linkHovered(self, link, title, textContent):
         if link == '':

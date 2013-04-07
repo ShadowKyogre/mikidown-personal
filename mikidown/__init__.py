@@ -261,9 +261,8 @@ class MikiWindow(QMainWindow):
                 #self.actionSave.setEnabled(False)
                 notesEdit.document().setModified(False)
 
-                url_here = 'file://' + os.path.join(self.notebookPath,name)
-                final_text = md.convert(noteBody)
-                md.reset()
+                url_here = 'wiki://' + os.path.join(self.notebookPath,name)
+                final_text = self.parseText(source=noteBody)
                 notesView.setHtml(final_text, QUrl(url_here))
             dialog.show()
 
@@ -494,7 +493,10 @@ class MikiWindow(QMainWindow):
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def parseText(self, source=None):
-        htmltext = self.notesEdit.toPlainText()
+        if source is not None:
+           htmltext=source
+        else:
+            htmltext = self.notesEdit.toPlainText()
         final_text = md.convert(htmltext)
         if hasattr(md,'toc'):
             final_text="<a class='tocshow'>TOC\n{}</a>\n\n<div class='contents'>{}\n</div>".format(md.toc,final_text)

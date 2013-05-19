@@ -52,7 +52,7 @@ However, I suggest you take a look at the complete [Markdown Syntax].
 ---
 Changes made by me:
 * Properly support relative URLS
-* use wiki:// to indicate a link within the notebook
+* ~~use wiki:// to indicate a link within the notebook~~
 * Fix PDF support
 
 ---

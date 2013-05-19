@@ -261,7 +261,7 @@ class MikiWindow(QMainWindow):
                 #self.actionSave.setEnabled(False)
                 notesEdit.document().setModified(False)
 
-                url_here = 'wiki://' + os.path.join(self.notebookPath,name)
+                url_here = 'file://' + os.path.join(self.notebookPath,name)
                 final_text = self.parseText(source=noteBody)
                 notesView.setHtml(final_text, QUrl(url_here))
             dialog.show()
@@ -475,7 +475,7 @@ class MikiWindow(QMainWindow):
 
         noteItem = self.notesTree.currentItem()
         name = self.notesTree.itemToPagePath(noteItem)
-        url_here = 'wiki://' + os.path.join(self.notebookPath,name)
+        url_here = 'file://' + os.path.join(self.notebookPath,name)
 
         self.notesView.setHtml(self.parseText(), QUrl(url_here))
         viewFrame.setScrollPosition(self.scrollPosition)
@@ -505,17 +505,20 @@ class MikiWindow(QMainWindow):
 
     def linkClicked(self, qlink):
         name = qlink.toString()
-        p = re.compile('(https?|file)://')
+        p = re.compile('https?://')
         if p.match(name):
             QDesktopServices.openUrl(qlink)
-        elif qlink.scheme() == "wiki":
+        else:
             here,anchor=qlink.path(),qlink.fragment()
             print(here,anchor)
             #now we just need to do the same scrolling in the edit view
             item = self.notesTree.pagePathToItem(qlink.path())
-            if self.notesTree.currentItem() != item:
-                self.notesTree.setCurrentItem(item)
-            self.notesView.page().mainFrame().scrollToAnchor(anchor)
+            if item:
+                if self.notesTree.currentItem() != item:
+                    self.notesTree.setCurrentItem(item)
+                self.notesView.page().mainFrame().scrollToAnchor(anchor)
+            else:
+                QDesktopServices.openUrl(qlink)
 
     def linkHovered(self, link, title, textContent):
         if link == '':

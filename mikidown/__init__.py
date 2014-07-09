@@ -24,7 +24,81 @@ settings.setValue('extensions',extensions)
 md = markdown.Markdown(extensions)
 
 __appname__ = 'mikidown'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
+
+class MikiSepNote(QDockWidget):
+    def __init__ (self, item, notesTree, notebookPath, parent=None):
+        super(MikiSepNote, self).__init__(parent)
+        self.notesTree = notesTree
+        self.notebookPath = notebookPath
+        if item is None: return
+        self.item = item
+        name = self.notesTree.itemToPagePath(item)
+
+        filename = os.path.join(self.notebookPath, name + '.md')
+        fh = QFile(filename)
+        try:
+            if not fh.open(QIODevice.ReadOnly):
+                raise IOError(fh.errorString())
+        except IOError as e:
+            QMessageBox.warning(self, 'Read Error', 
+                    'Failed to open %s: %s' % (filename, e))
+        finally:
+            self.setWindowTitle(os.path.basename(name))
+            self.setFloating(True)
+            self.setAttribute(Qt.WA_DeleteOnClose)
+
+            layout = QTabWidget()
+            self.setWidget(layout)
+            self.notesEdit = QPlainTextEdit()
+            self.notesEdit.setFont(monofont)
+            self.notesView = QWebView()
+            notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
+            self.notesView.settings().setUserStyleSheetUrl(notecss)
+            self.notesEdit.setReadOnly(True)
+            layout.addTab(self.notesEdit,'Markdown')
+            layout.addTab(self.notesView,'HTML')
+            if fh is not None:
+                noteBody = QTextStream(fh).readAll()
+                fh.close()
+                self.notesEdit.setPlainText(noteBody)
+                #self.editted = 0
+                #self.actionSave.setEnabled(False)
+                self.notesEdit.document().setModified(False)
+
+
+                url_here = 'file://' + os.path.join(self.notebookPath,name)
+                final_text = self.parseText(source=noteBody)
+                self.notesView.setHtml(final_text, QUrl(url_here))
+                self.notesView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+                self.notesView.page().linkClicked.connect(self.linkClicked)
+
+    def linkClicked(self, qlink):
+        name = qlink.toString()
+        p = re.compile('https?://')
+        if p.match(name):
+            QDesktopServices.openUrl(qlink)
+        else:
+            here,anchor=qlink.path(), qlink.fragment()
+            print(here,anchor)
+            #now we just need to do the same scrolling in the edit view
+            item = self.notesTree.pagePathToItem(here)
+            if item:
+                if self.item != item:
+                    msn = MikiSepNote(item, self.notesTree, self.notebookPath, parent=self.parent())
+                    msn.notesView.page().mainFrame().scrollToAnchor(anchor)
+                    msn.show()
+                else:
+                    self.notesView.page().mainFrame().scrollToAnchor(anchor)
+            else:
+                QDesktopServices.openUrl(qlink)
+
+    def parseText(self, source):
+        final_text = md.convert(source)
+        if hasattr(md,'toc'):
+            final_text="<div id='tocwrapper'><a class='tocshow'>&#9776;\n{}</a></div>\n\n<div class='contents'>{}\n</div>".format(md.toc,final_text)
+        md.reset()
+        return final_text
 
 class MikiWindow(QMainWindow):
     def __init__(self, notebookPath=None, name=None, parent=None):
@@ -225,46 +299,12 @@ class MikiWindow(QMainWindow):
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
 
-    def newNoteDisplay(self, item):
+    def newNoteDisplay(self, item, anchor=None):
         #print(item)
-        if item is None: return
-        name = self.notesTree.itemToPagePath(item)
-
-        filename = os.path.join(self.notebookPath, name + '.md')
-        fh = QFile(filename)
-        try:
-            if not fh.open(QIODevice.ReadOnly):
-                raise IOError(fh.errorString())
-        except IOError as e:
-            QMessageBox.warning(self, 'Read Error', 
-                    'Failed to open %s: %s' % (filename, e))
-        finally:
-            dialog = QDockWidget(os.path.basename(name),self)
-            dialog.setFloating(True)
-            dialog.setAttribute(Qt.WA_DeleteOnClose)
-
-            layout = QTabWidget()
-            dialog.setWidget(layout)
-            notesEdit = QPlainTextEdit()
-            notesEdit.setFont(monofont)
-            notesView = QWebView()
-            notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
-            notesView.settings().setUserStyleSheetUrl(notecss)
-            notesEdit.setReadOnly(True)
-            layout.addTab(notesEdit,'Markdown')
-            layout.addTab(notesView,'HTML')
-            if fh is not None:
-                noteBody = QTextStream(fh).readAll()
-                fh.close()
-                notesEdit.setPlainText(noteBody)
-                #self.editted = 0
-                #self.actionSave.setEnabled(False)
-                notesEdit.document().setModified(False)
-
-                url_here = 'file://' + os.path.join(self.notebookPath,name)
-                final_text = self.parseText(source=noteBody)
-                notesView.setHtml(final_text, QUrl(url_here))
-            dialog.show()
+        msn = MikiSepNote(item, self.notesTree, self.notebookPath, parent=self)
+        if anchor:
+            msn.notesView.page().mainFrame().scrollToAnchor(anchor)
+        msn.show()
 
     def initTree(self, notePath, parent):
         if not QDir(notePath).exists():
@@ -494,7 +534,7 @@ class MikiWindow(QMainWindow):
 
     def parseText(self, source=None):
         if source is not None:
-           htmltext=source
+            htmltext = source
         else:
             htmltext = self.notesEdit.toPlainText()
         final_text = md.convert(htmltext)
@@ -509,10 +549,10 @@ class MikiWindow(QMainWindow):
         if p.match(name):
             QDesktopServices.openUrl(qlink)
         else:
-            here,anchor=qlink.path(),qlink.fragment()
+            here,anchor=qlink.path(), qlink.fragment()
             print(here,anchor)
             #now we just need to do the same scrolling in the edit view
-            item = self.notesTree.pagePathToItem(qlink.path())
+            item = self.notesTree.pagePathToItem(here)
             if item:
                 if self.notesTree.currentItem() != item:
                     self.notesTree.setCurrentItem(item)

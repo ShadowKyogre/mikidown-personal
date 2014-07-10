@@ -120,24 +120,31 @@ class MikiTree(QTreeWidget):
             item = item.parent()
         return path
     
-    def treeMenu(self):
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            return
+        else:
+            QTreeWidget.mousePressEvent(self, event)
+
+    def treeMenu(self, qpoint):
         menu = QMenu()
-        menu.addAction("New Page...", self.newPage)
-        menu.addAction("New Subpage...", self.newSubpage)
-        menu.addAction("View separately", self.nvwCallback)
+        item = self.itemAt(qpoint)
+        menu.addAction("New Page...", lambda: self.newPageCore(self))
+        menu.addAction("New Subpage...", lambda: self.newPageCore(item))
+        menu.addAction("View separately", lambda: self.nvwCallback(item))
         menu.addSeparator()
         menu.addAction("Collapse This Note Tree", 
-            lambda item=self.currentItem(): self.recurseCollapse(item))
+            lambda: self.recurseCollapse(item))
         menu.addAction("Uncollapse This Note Tree", 
-            lambda item=self.currentItem():  self.recurseExpand(item))
+            lambda:  self.recurseExpand(item))
         menu.addAction("Collapse All", self.collapseAll)
         menu.addAction("Uncollapse All", self.expandAll)
         menu.addSeparator()
-        menu.addAction('Rename Page...', lambda item=self.currentItem(): self.renamePage(item))
-        self.delCallback = lambda item=self.currentItem(): self.delPage(item)
+        menu.addAction('Rename Page...', lambda: self.renamePage(item))
+        self.delCallback = lambda: self.delPage(item)
         menu.addAction("Delete Page", self.delCallback)
-        menu.exec_(QCursor.pos())
-
+        menu.exec_(self.mapToGlobal(qpoint))
+#"""
     def newPage(self):
         if self.currentItem() is None:
             self.newPageCore(self)
@@ -151,7 +158,7 @@ class MikiTree(QTreeWidget):
     def newSubpage(self):
         item = self.currentItem()
         self.newPageCore(item)
-            
+#"""            
     def newPageCore(self, item):
         pagePath = self.itemToPagePath(item)
         dialog = ItemDialog(self)

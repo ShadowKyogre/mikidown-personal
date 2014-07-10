@@ -144,7 +144,7 @@ class MikiWindow(QMainWindow):
         self.mainSplitter.setStretchFactor(1, 5)
 
         self.notesTree = MikiTree(notebookPath)
-        self.notesTree.nvwCallback = lambda: self.newNoteDisplay(self.notesTree.currentItem())
+        self.notesTree.nvwCallback = self.newNoteDisplay
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
         self.searchList = QListWidget()

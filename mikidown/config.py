@@ -181,7 +181,7 @@ class NewNotebookDlg(QDialog):
 		nameLabel = QLabel('Name:')
 		nameLabel.setBuddy(self.nameEditor)
 		self.pathEditor = QLineEdit()
-		self.pathEditor.setText(os.path.expanduser('~/mikinotes').replace('\\','/'))
+		self.pathEditor.setText(os.path.expanduser('~/mikinotes').replace(os.sep,'/'))
 		pathLabel = QLabel('Path:')
 		pathLabel.setBuddy(self.pathEditor)
 		browse = QPushButton('Browse')

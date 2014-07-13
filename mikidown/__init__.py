@@ -53,7 +53,8 @@ class MikiSepNote(QDockWidget):
             self.notesEdit = QPlainTextEdit()
             self.notesEdit.setFont(monofont)
             self.notesView = QWebView()
-            notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
+            ncss_url = 'file://' + os.path.join(self.notebookPath,'notes.css').replace(os.sep, '/')
+            notecss = QUrl(ncss_url)
             self.notesView.settings().setUserStyleSheetUrl(notecss)
             self.notesEdit.setReadOnly(True)
             layout.addTab(self.notesEdit,'Markdown')
@@ -67,9 +68,10 @@ class MikiSepNote(QDockWidget):
                 self.notesEdit.document().setModified(False)
 
 
-                url_here = 'file://' + os.path.join(self.notebookPath,name)
+                url_here = 'file://' + os.path.join(self.notebookPath,name).replace(os.sep, '/')
+                qurl_here = QUrl(url_here)
                 final_text = self.parseText(source=noteBody)
-                self.notesView.setHtml(final_text, QUrl(url_here))
+                self.notesView.setHtml(final_text, qurl_here)
                 self.notesView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
                 self.notesView.page().linkClicked.connect(self.linkClicked)
 
@@ -129,7 +131,10 @@ class MikiWindow(QMainWindow):
         self.notesEdit.setVisible(False)
         self.notesEdit.setFont(monofont)
         self.notesView.settings().clearMemoryCaches()
-        notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
+
+        ncss_url = 'file://' + os.path.join(self.notebookPath,'notes.css').replace(os.sep, '/')
+        notecss = QUrl(ncss_url)
+
         self.notesView.settings().setUserStyleSheetUrl(notecss)
         self.rightSplitter = QSplitter(Qt.Vertical)
         self.rightSplitter.setChildrenCollapsible(False)
@@ -515,9 +520,10 @@ class MikiWindow(QMainWindow):
 
         noteItem = self.notesTree.currentItem()
         name = self.notesTree.itemToPagePath(noteItem)
-        url_here = 'file://' + os.path.join(self.notebookPath,name)
+        url_here = 'file://' + os.path.join(self.notebookPath,name).replace(os.sep, '/')
+        qurl_here = QUrl(url_here)
 
-        self.notesView.setHtml(self.parseText(), QUrl(url_here))
+        self.notesView.setHtml(self.parseText(), qurl_here)
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateLiveView(self):

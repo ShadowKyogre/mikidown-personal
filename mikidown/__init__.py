@@ -68,8 +68,8 @@ class MikiSepNote(QDockWidget):
                 self.notesEdit.document().setModified(False)
 
 
-                url_here = 'file://' + os.path.join(self.notebookPath,name).replace(os.sep, '/')
-                qurl_here = QUrl(url_here)
+                url_here = os.path.join(self.notebookPath,name).replace(os.sep, '/')
+                qurl_here = QUrl.fromLocalFile(url_here)
                 final_text = self.parseText(source=noteBody)
                 self.notesView.setHtml(final_text, qurl_here)
                 self.notesView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
@@ -134,6 +134,7 @@ class MikiWindow(QMainWindow):
 
         ncss_url = 'file://' + os.path.join(self.notebookPath,'notes.css').replace(os.sep, '/')
         notecss = QUrl(ncss_url)
+        print(notecss.toString())
 
         self.notesView.settings().setUserStyleSheetUrl(notecss)
         self.rightSplitter = QSplitter(Qt.Vertical)
@@ -520,8 +521,8 @@ class MikiWindow(QMainWindow):
 
         noteItem = self.notesTree.currentItem()
         name = self.notesTree.itemToPagePath(noteItem)
-        url_here = 'file://' + os.path.join(self.notebookPath,name).replace(os.sep, '/')
-        qurl_here = QUrl(url_here)
+        url_here =  os.path.join(self.notebookPath,name).replace(os.sep, '/')
+        qurl_here = QUrl.fromLocalFile(url_here)
 
         self.notesView.setHtml(self.parseText(), qurl_here)
         viewFrame.setScrollPosition(self.scrollPosition)

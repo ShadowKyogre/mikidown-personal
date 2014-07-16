@@ -11,6 +11,7 @@ from mikidown.config import *
 from mikidown.mikitree import *
 from mikidown.findreplacedialog import *
 from mikidown.highlighter import *
+from mikidown.mikiedit import *
 
 import markdown
 sys.path.append(os.path.dirname(__file__))
@@ -51,7 +52,7 @@ class MikiSepNote(QDockWidget):
 
             layout = QTabWidget()
             self.setWidget(layout)
-            self.notesEdit = QPlainTextEdit()
+            self.notesEdit = MikiEdit()
             self.notesEdit.setFont(monofont)
             self.notesView = QWebView()
             ncss_url = 'file://' + os.path.join(self.notebookPath,'notes.css').replace(os.sep, '/')
@@ -120,7 +121,7 @@ class MikiWindow(QMainWindow):
         #self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
-        self.notesEdit = QPlainTextEdit()
+        self.notesEdit = MikiEdit()
         self.notesView = QWebView()
         
         self.findBar = QToolBar(self.tr('Find'), self)

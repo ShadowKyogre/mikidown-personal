@@ -10,6 +10,7 @@ from PyQt4.QtWebKit import QWebView, QWebPage
 from mikidown.config import *
 from mikidown.mikitree import *
 from mikidown.findreplacedialog import *
+from mikidown.highlighter import *
 
 import markdown
 sys.path.append(os.path.dirname(__file__))
@@ -56,6 +57,7 @@ class MikiSepNote(QDockWidget):
             ncss_url = 'file://' + os.path.join(self.notebookPath,'notes.css').replace(os.sep, '/')
             notecss = QUrl(ncss_url)
             self.notesView.settings().setUserStyleSheetUrl(notecss)
+            self.highlighter = MikiHighlighter(self.notesEdit.document())
             self.notesEdit.setReadOnly(True)
             layout.addTab(self.notesEdit,'Markdown')
             layout.addTab(self.notesView,'HTML')
@@ -66,7 +68,6 @@ class MikiSepNote(QDockWidget):
                 #self.editted = 0
                 #self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
-
 
                 url_here = os.path.join(self.notebookPath,name).replace(os.sep, '/')
                 qurl_here = QUrl.fromLocalFile(url_here)
@@ -342,6 +343,7 @@ class MikiWindow(QMainWindow):
                 #self.editted = 0
                 #self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
+                self.highlighter = MikiHighlighter(self.notesEdit.document())
                 self.updateView()
                 self.setCurrentFile()
                 self.updateRecentViewedNotes()
@@ -523,6 +525,7 @@ class MikiWindow(QMainWindow):
         name = self.notesTree.itemToPagePath(noteItem)
         url_here =  os.path.join(self.notebookPath,name).replace(os.sep, '/')
         qurl_here = QUrl.fromLocalFile(url_here)
+        print(qurl_here.toString())
 
         self.notesView.setHtml(self.parseText(), qurl_here)
         viewFrame.setScrollPosition(self.scrollPosition)

@@ -12,6 +12,7 @@ from mikidown.mikitree import *
 from mikidown.findreplacedialog import *
 from mikidown.highlighter import *
 from mikidown.mikiedit import *
+from .slashpleter import SlashPleter
 
 import markdown
 sys.path.append(os.path.dirname(__file__))
@@ -152,22 +153,32 @@ class MikiWindow(QMainWindow):
         self.mainSplitter.setStretchFactor(1, 5)
 
         self.notesTree = MikiTree(notebookPath)
+        self.quickNoteNav = QLineEdit()
+        self.notesTab = QWidget()
+        self.completer = SlashPleter()
+        self.completer.setModel(self.notesTree.model())
+        self.quickNoteNav.setCompleter(self.completer)
         self.notesTree.nvwCallback = self.newNoteDisplay
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
+        self.quickNoteNav.returnPressed.connect(self.openFuncWrapper)
         self.searchList = QListWidget()
         self.searchTab = QWidget()
         searchLayout = QVBoxLayout()
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchList)
         self.searchTab.setLayout(searchLayout)
+
+        indexLayout = QVBoxLayout(self.notesTab)
+        indexLayout.addWidget(self.quickNoteNav)
+        indexLayout.addWidget(self.notesTree)
         #self.tabWidget.addTab(self.notesTree, 'Index')
         #self.tabWidget.addTab(self.searchTab, 'Search')
         
         docky = QDockWidget('Index')
         docky2 = QDockWidget('Search')
 
-        docky.setWidget(self.notesTree)
+        docky.setWidget(self.notesTab)
         docky2.setWidget(self.searchTab)
 
         self.addDockWidget(Qt.LeftDockWidgetArea,docky)
@@ -261,6 +272,10 @@ class MikiWindow(QMainWindow):
         # menuHelp
         self.menuHelp.addAction(self.actionReadme)
 
+        actionQuickNav = self.act(self.tr("&Quick Open Note"),
+        trig=self.quickNoteNav.setFocus, shct=QKeySequence('Ctrl+G'))
+        self.addAction(actionQuickNav)
+
         self.toolBar = QToolBar(self.tr('toolbar'), self)
         self.addToolBar(Qt.TopToolBarArea, self.toolBar)
         self.toolBar.addAction(self.actionEdit)
@@ -326,6 +341,9 @@ class MikiWindow(QMainWindow):
             path = notePath + '/' + note.baseName()
             self.initTree(path, item)
         self.editted = 0
+
+    def openFuncWrapper(self):
+        self.openFunction(self.quickNoteNav.text())()
 
     def openNote(self, noteFullName):
         filename = os.path.join(self.notebookPath, noteFullName + '.md')

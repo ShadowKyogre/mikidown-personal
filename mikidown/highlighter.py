@@ -12,7 +12,7 @@ class MikiHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(MikiHighlighter, self).__init__(parent)
         baseFontSize = 12
-        NUM = 15
+        NUM = 16
         self.patterns = []
         regexp = [0] * NUM
         font = [0]*NUM
@@ -71,13 +71,19 @@ class MikiHighlighter(QSyntaxHighlighter):
         color[12] = QColor("#204A87")
         font[12] = QFont(None, baseFontSize, -1)
         # 13: blockquotes and lists -  > or - or *
-        regexp[13] = r'(^>+)|(^- )|(^\* )'
+        regexp[13] = r'(^>+)|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
         color[13] = QColor("#F57900")
         font[13] = QFont(None, baseFontSize, -1)
         # 14: fence - ``` or ~~~
         regexp[14] = '^(?:~{3,}|`{3,}).*$'
         color[14] = QColor("#F57900")
         font[14] = QFont(None, baseFontSize, QFont.Bold)
+
+        # 15: math - $$
+        regexp[15] = r'^(?:\${2}).*$'
+        color[15] = QColor("#F5006E")
+        font[15] = QFont(None, baseFontSize, QFont.Bold)
+
         for i in range(NUM):
             p = re.compile(regexp[i])
             f = QTextCharFormat()
@@ -92,6 +98,11 @@ class MikiHighlighter(QSyntaxHighlighter):
         self.fenced_block = re.compile("^(?:~{3,}|`{3,}).*$")
         self.fenced_format = QTextCharFormat()
         self.fenced_format.setFont(fenced_font)
+
+        math_font = QFont("monospace", baseFontSize, -1)
+        self.math_block = re.compile(r"^(?:\${2}).*$")
+        self.math_format = QTextCharFormat()
+        self.math_format.setFont(math_font)
 
 
     def highlightSpellcheck(self, text):
@@ -116,16 +127,24 @@ class MikiHighlighter(QSyntaxHighlighter):
 
         # escape highlights in fenced_block
         m = self.fenced_block.match(text)
+        m2 = self.math_block.match(text)
         self.setCurrentBlockState(0)
-        if self.previousBlockState() != 1:
+        if self.previousBlockState() > 1:
             if m:
                 self.setCurrentBlockState(1)
-        else:
+            elif m2:
+                self.setCurrentBlockState(2)
+        elif self.previousBlockState() == 1:
             if m:
                 self.setCurrentBlockState(0)
             else:
                 self.setCurrentBlockState(1)
                 self.setFormat(0, len(text), self.fenced_format)
-        #self.highlightSpellcheck(text)
-
+        elif self.previousBlockState() == 2:
+            if m2:
+                self.setCurrentBlockState(0)
+            else:
+                self.setCurrentBlockState(2)
+                self.setFormat(0, len(text), self.math_format)
+        self.highlightSpellcheck(text)
 

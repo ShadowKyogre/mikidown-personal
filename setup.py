@@ -1,6 +1,7 @@
 from distutils.core import setup
-setup(name='mikidown',
-    version='0.1.4',
+from mikidown import __version__, __appname__
+setup(name=__appname__,
+    version=__version__,
     scripts = ['mikidown/scripts/mikidown'],
     packages=['mikidown'],
     data_files=[('share/mikidown', ['README.mkd']), 

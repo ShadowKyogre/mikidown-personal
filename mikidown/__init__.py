@@ -746,7 +746,7 @@ class MikiWindow(QMainWindow):
 
 def grep(pattern, f):
   regex = re.compile(pattern)
-  with open(f) as fl:
+  with open(f, encoding='utf-8') as fl:
     for line in fl:
       if regex.search(line):
         return True

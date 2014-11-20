@@ -54,6 +54,8 @@ class MikiSepNote(QDockWidget):
             layout = QTabWidget()
             self.setWidget(layout)
             self.notesEdit = MikiEdit()
+            qfm = QFontMetrics(monofont)
+            self.notesEdit.setTabStopWidth( settings.value('tabWidth', 4) * qfm.width(' ') )
             self.notesEdit.setFont(monofont)
             self.notesView = QWebView()
             ncss_url = 'file://' + os.path.join(self.notebookPath,'notes.css').replace(os.sep, '/')
@@ -123,6 +125,8 @@ class MikiWindow(QMainWindow):
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = MikiEdit()
+        qfm = QFontMetrics(monofont)
+        self.notesEdit.setTabStopWidth( settings.value('tabWidth', 4) * qfm.width(' ') )
         self.notesView = QWebView()
         
         self.findBar = QToolBar(self.tr('Find'), self)
